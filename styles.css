@@ -1223,6 +1223,31 @@ h1 {
   white-space:nowrap
 }
 
+/* Настройки звука не зависят от игровых панелей и сохраняют фокус
+   при перерисовке фермы. Диапазоны имеют удобную область касания. */
+.credits {
+  font-size:0.875rem;
+  line-height:1.5;
+  color:var(--muted);
+  text-align:center;
+  margin-top:6px;
+  grid-column:1/-1;
+}
+.credits strong { font-weight:600; }
+.audio-channel { padding:12px 0; border-top:1px solid var(--border); }
+.audio-switch { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:48px; font-weight:650; cursor:pointer; }
+.audio-switch input { appearance:none; position:relative; width:52px; height:48px; margin:0; flex-shrink:0; cursor:pointer; }
+.audio-switch input::before { content:""; position:absolute; inset:9px 0; border-radius:20px; background:#d8e1d0; }
+.audio-switch input::after { content:""; position:absolute; width:22px; height:22px; left:4px; top:13px; border-radius:50%; background:white; box-shadow:0 1px 4px #20332530; }
+.audio-switch input:checked::before { background:var(--green); }
+.audio-switch input:checked::after { left:26px; }
+.audio-volume-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:0.875rem; color:var(--muted); margin:12px 0 2px; }
+.audio-channel input[type="range"] { width:100%; min-height:48px; accent-color:var(--green); margin:0; cursor:pointer; }
+.audio-channel input:focus-visible { outline:3px solid #1260ae; outline-offset:3px; }
+.audio-channel input:disabled { cursor:not-allowed; opacity:.5; }
+#audio-dialog .credits { margin-top:18px; }
+#audio-preview { margin-top:8px; }
+
 /* При увеличении текста сетки и подписи могут переноситься независимо
    от ширины экрана. Минимальная ширина содержимого не растягивает страницу. */
 .layout { grid-template-columns:minmax(0,1fr) minmax(0,288px); }
@@ -1242,6 +1267,7 @@ h1 {
 }
 @media(max-width:599px) {
   .bottom-nav { width:100%; max-width:none; }
+  .coin-label { display:none; }
   .topbar { flex-wrap:wrap; height:auto; min-height:82px; gap:12px; padding-top:14px; padding-bottom:14px; }
   .sidebar { grid-template-columns:minmax(0,1fr); }
   .inventory-card #inventory { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -1254,6 +1280,10 @@ h1 {
   .brand-icon { font-size:35px; }
 }
 @media(max-width:359px) {
+  .brand { font-size:1.5rem; gap:6px; }
+  .brand-icon { width:32px; height:32px; font-size:29px; }
+  .header-actions { gap:6px; }
+  .balance { padding:6px 8px; }
   .goal-card ol { grid-template-columns:minmax(0,1fr); }
 }
 

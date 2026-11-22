@@ -2,6 +2,7 @@ import { CROPS, ANIMALS, PRODUCTS, RULES } from './catalog.mjs';
 import { command, canRescue } from './model.mjs';
 import { createStorage, SAVE_KEY } from './storage.mjs';
 import { scenery, plantArt } from './art.mjs';
+import { FarmAudio, loadAudio, saveAudio } from './audio.mjs';
 
 const $ = id => document.getElementById(id);
 const storage = createStorage(() => window.localStorage);
@@ -12,6 +13,65 @@ let chosenPlot = null;
 let frozen = loaded.status === 'blocked';
 let toastTimeout;
 let returnFocus = null;
+const audioSettings = loadAudio(() => window.localStorage);
+let audioPreferences = audioSettings.preferences;
+let audioSettingsSaved = audioSettings.saved;
+const sound = new FarmAudio(window, status => updateAudioStatus(status.message));
+sound.configure(audioPreferences);
+sound.setActive(Boolean(state) && !frozen && !document.hidden);
+
+function updateAudioStatus(message = '') {
+  const enabled = (audioPreferences.music && audioPreferences.musicVolume > 0) ||
+    (audioPreferences.effects && audioPreferences.effectsVolume > 0);
+  $('audio-status').textContent = message || (!sound.available
+    ? 'Звук недоступен в этом браузере. Игра продолжит работать без него.'
+    : !enabled ? 'Звук выключен.'
+    : sound.context?.state === 'running' ? 'Звук включён. В скрытой вкладке он останавливается.'
+    : 'Музыка и эффекты начнут звучать после первого действия в игре.');
+  $('audio-save-note').textContent = audioSettingsSaved
+    ? 'Настройки хранятся в этом браузере отдельно от прогресса фермы.'
+    : 'Настройки действуют сейчас, но не сохранятся после закрытия: хранилище недоступно или прежние настройки повреждены.';
+  for (const channel of ['music', 'effects']) {
+    $('audio-' + channel).disabled = !sound.available;
+    $('audio-' + channel + '-volume').disabled = !sound.available;
+  }
+  $('audio-preview').disabled = !sound.available || !audioPreferences.effects || audioPreferences.effectsVolume === 0;
+  $('sound').setAttribute('aria-label', enabled && sound.available ? 'Настройки звука: включён' : 'Настройки звука: выключен');
+}
+
+function showAudioPreferences() {
+  for (const channel of ['music', 'effects']) {
+    $('audio-' + channel).checked = audioPreferences[channel];
+    $('audio-' + channel + '-volume').value = audioPreferences[channel + 'Volume'];
+    $('audio-' + channel + '-value').textContent = audioPreferences[channel + 'Volume'] + '%';
+  }
+  updateAudioStatus();
+}
+
+function changeAudioPreferences() {
+  for (const channel of ['music', 'effects']) {
+    audioPreferences[channel] = $('audio-' + channel).checked;
+    audioPreferences[channel + 'Volume'] = Number($('audio-' + channel + '-volume').value);
+  }
+  sound.configure(audioPreferences);
+  audioSettingsSaved = saveAudio(() => window.localStorage, audioPreferences);
+  showAudioPreferences();
+  void sound.unlock();
+}
+
+showAudioPreferences();
+for (const channel of ['music', 'effects']) {
+  $('audio-' + channel).addEventListener('change', changeAudioPreferences);
+  $('audio-' + channel + '-volume').addEventListener('input', changeAudioPreferences);
+}
+// Возобновление AudioContext привязано к настоящему касанию/клавише,
+// а не к загрузке страницы. Обработчики не отменяют обычный ввод.
+document.addEventListener('pointerdown', event => { if (event.isTrusted) void sound.unlock(); }, { capture: true, passive: true });
+document.addEventListener('keydown', event => {
+  if (event.isTrusted && ['Enter', ' ', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) void sound.unlock();
+}, { capture: true });
+window.addEventListener('pagehide', () => sound.setActive(false));
+window.addEventListener('pageshow', () => sound.setActive(Boolean(state) && !frozen && !document.hidden));
 
 function notice(text) {
   $('toast').textContent = text;
@@ -41,12 +101,18 @@ for (const dialog of document.querySelectorAll('dialog')) {
 }
 $('conflict-dialog').addEventListener('cancel', e => e.preventDefault());
 $('help').addEventListener('click', () => showDialog('help-dialog'));
+$('sound').addEventListener('click', () => { showAudioPreferences(); showDialog('audio-dialog'); });
+$('audio-preview').addEventListener('click', async () => {
+  if (await sound.unlock()) sound.effect('harvest');
+});
 
 function conflict() {
   frozen = true;
+  sound.setActive(false);
   $('game-content').classList.add('conflict-lock');
   $('seed-dialog').close();
   $('help-dialog').close();
+  $('audio-dialog').close();
   if (!$('conflict-dialog').open) showDialog('conflict-dialog');
 }
 
@@ -73,7 +139,8 @@ function perform(action, text) {
     render();
     if (focusID) $(focusID)?.focus();
     notice(text);
-  } catch (error) { notice(error.message); }
+    sound.effect(action.type, state.animals[action.animal]?.type);
+  } catch (error) { notice(error.message); sound.effect('error'); }
 }
 
 function timeLeft(readyAt) {
@@ -197,7 +264,10 @@ for (const button of document.querySelectorAll('[data-tab]')) button.addEventLis
   render();
 });
 window.addEventListener('storage', event => { if ((event.key === SAVE_KEY || event.key === null) && storage.isChanged() && state) conflict(); });
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (storage.isChanged() && state) conflict(); else updateTimers(); } });
+document.addEventListener('visibilitychange', () => {
+  sound.setActive(Boolean(state) && !frozen && !document.hidden);
+  if (!document.hidden) { if (storage.isChanged() && state) conflict(); else updateTimers(); }
+});
 $('reload-save').addEventListener('click', () => location.reload());
 
 if (!state) {
