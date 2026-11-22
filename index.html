@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#28633a">
+  <meta name="description" content="Маленькая ферма в вашем браузере. Выращивайте урожай, заботьтесь о животных и развивайте своё хозяйство.">
+  <title>Ферма — маленькие радости каждый день</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E🌾%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#main">К игре</a>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Ферма, главная"><span class="brand-icon" aria-hidden="true">❋</span><span>ферма<span class="brand-sub">маленькие радости каждый день</span></span></a>
+    <div class="header-actions"><span class="balance"><span aria-hidden="true">✦</span> <strong id="coins">60</strong> <span class="coin-label">монет</span></span><button class="icon-button" id="help" aria-label="Как играть">?</button></div>
+  </header>
+  <div id="storage-warning" class="warning" hidden></div>
+  <div class="layout">
+    <main id="main" tabindex="-1">
+      <section class="welcome"><div><p class="eyebrow">ВАШ МАЛЕНЬКИЙ УГОЛОК ПРИРОДЫ</p><h1>Хороший день,<br>чтобы что-нибудь вырастить.</h1><p>Без спешки. С заботой. Своими руками.</p></div><div class="sun" aria-hidden="true">☀</div></section>
+      <div class="section-heading"><div><p class="eyebrow" id="section-kicker">ОТ СЕМЕЧКА ДО УРОЖАЯ</p><h2 id="section-title">Мои грядки</h2></div><span class="section-count" id="section-count"></span></div>
+      <section id="game-content" aria-labelledby="section-title"></section>
+    </main>
+    <aside class="sidebar" aria-label="Дела и склад">
+      <section class="goal-card"><span class="eyebrow">МАЛЕНЬКИЕ БОЛЬШИЕ ШАГИ</span><h2>Ферма начинается<br>с заботы</h2><p>Пусть здесь всё растёт.<br>А мы подскажем, с чего начать.</p><ol id="goals"></ol><div class="goal-note">Каждое семечко — новое начало.</div></section>
+      <section class="inventory-card"><div class="card-heading"><h2>В амбаре</h2><span aria-hidden="true">⌂</span></div><div id="inventory"></div><p class="small-note">Пшеница пригодится для кормления животных.</p></section>
+      <p class="save-note" id="save-status">Прогресс хранится в этом браузере</p>
+    </aside>
+  </div>
+  <nav class="bottom-nav" aria-label="Разделы фермы"><button data-tab="plots" aria-current="page"><span aria-hidden="true">🌱</span>Грядки</button><button data-tab="animals"><span aria-hidden="true">🐔</span>Животные</button><button data-tab="market"><span aria-hidden="true">🧺</span>Рынок</button></nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog id="seed-dialog" aria-labelledby="seed-title"><div class="dialog-heading"><div><p class="eyebrow">НАЧНЁМ С МАЛЕНЬКОГО</p><h2 id="seed-title">Что посадим?</h2></div><button class="icon-button" data-close aria-label="Закрыть выбор семян">×</button></div><p>Семена покупаются при посадке. Урожай можно продать или оставить в амбаре.</p><div id="seed-options"></div></dialog>
+  <dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title">Добро пожаловать на ферму</h2><button class="icon-button" data-close aria-label="Закрыть справку">×</button></div><ol class="instructions"><li>Выберите пустую грядку и семена. Первый урожай пшеницы — через 20 секунд.</li><li>Соберите урожай. Пшеницей можно накормить курицу, а позже — корову.</li><li>Заберите яйца и молоко. На рынке продавайте продукцию за монеты.</li><li>Покупайте новые грядки и корову. Урожай не портится, животные не болеют.</li></ol><p class="small-note">Созревание продолжается, пока вкладка закрыта. Прогресс привязан к этому браузеру и адресу игры. Очистка данных браузера удалит сохранение. Одновременная игра в нескольких вкладках не поддерживается.</p><button class="primary" data-close>Пора выращивать</button></dialog>
+  <dialog id="conflict-dialog" aria-labelledby="conflict-title"><h2 id="conflict-title">Сохранение изменилось</h2><p>Похоже, ферма открыта в другой вкладке. Загрузите актуальное состояние, чтобы продолжить.</p><button class="primary" id="reload-save">Загрузить сохранение</button></dialog>
+  <dialog id="reset-dialog" aria-labelledby="reset-title"><h2 id="reset-title">Заменить старое сохранение?</h2><p>Существующий прогресс будет заменён новой фермой с 60 монетами. Отменить это действие нельзя. Если хотите восстановить старую ферму, закройте это окно.</p><button class="secondary" data-close>Отмена</button> <button class="primary" id="confirm-new">Да, начать новую ферму</button></dialog>
+</body>
+</html>
